@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.spring.mapper.CenterMapper">
+	<select id="saleListAll" resultType="SaleVO">
+		select * from sale
+	</select>
+	<select id="getTotalCount" resultType="int"
+		parameterType="org.spring.domain.Criteria">
+		SELECT COUNT('sno') FROM sale
+		<if test="type != null and type != ''">
+			<where>
+				<choose>
+					<when test='type.equals("S")'>
+						area LIKE "서울"
+					</when>
+					<when test='type.equals("G")'>
+						area IN ("경기","인천")
+					</when>
+					<when test='type.equals("W")'>
+						area LIKE "강원"
+					</when>
+					<when test='type.equals("C")'>
+						area IN ("충청","충남","충북")
+					</when>
+					<when test='type.equals("L")'>
+						area IN ("전라","전남","전북")
+					</when>
+					<when test='type.equals("Y")'>
+						area IN ("경상",'경남','경북','대구','부산')
+					</when>
+					<when test='type.equals("J")'>
+						area LIKE "제주"
+					</when>
+				</choose>
+			</where>
+		</if>
+	</select>
+
+	<select id="saleList" resultType="SaleVO"
+		parameterType="org.spring.domain.Criteria">
+		SELECT * FROM sale
+		<if test="type != null and type != ''">
+			<where>
+				<choose>
+					<when test='type.equals("S")'>
+						area LIKE "서울"
+					</when>
+					<when test='type.equals("G")'>
+						area IN ("경기","인천")
+					</when>
+					<when test='type.equals("W")'>
+						area LIKE "강원"
+					</when>
+					<when test='type.equals("C")'>
+						area IN ("충청","충남","충북")
+					</when>
+					<when test='type.equals("L")'>
+						area IN ("전라","전남","전북")
+					</when>
+					<when test='type.equals("Y")'>
+						area IN ("경상",'경남','경북','대구','부산')
+					</when>
+					<when test='type.equals("J")'>
+						area LIKE "제주"
+					</when>
+				</choose>
+			</where>
+		</if>
+		ORDER BY 'sno' DESC
+		LIMIT #{start}, #{amount}
+	</select>
+	<select id="listFAQ" resultType="FAQVO" parameterType="FAQVO">
+		SELECT * FROM faq
+		<where>
+			<choose>
+				<when test='category.equals("H")'>
+					category LIKE "홈페이지"
+				</when>
+				<when test='category.equals("A")'>
+					category LIKE "계정"
+				</when>
+			</choose>
+		</where>
+	</select>
+
+	<select id="getFqnaTotalCount" resultType="int"
+		parameterType="org.spring.domain.Criteria">
+		SELECT COUNT(qno) FROM questions
+		WHERE qno IS NOT NULL
+		<if test="nickname != null and nickname != ''">
+			AND nickname LIKE #{nickname}
+		</if>
+		<if test="type != null and type != ''">
+			<choose>
+				<when test='type.equals("O")'>
+					AND answer IS NOT NULL
+				</when>
+				<when test='type.equals("X")'>
+					AND answer IS NULL
+				</when>
+			</choose>
+		</if>
+	</select>
+	<select id="myQuestionList" resultType="QuestionsVO"
+		parameterType="org.spring.domain.Criteria">
+		SELECT * FROM questions
+		WHERE nickname LIKE #{nickname} 
+		<if test="type != null and type != ''">
+			<choose>
+				<when test='type.equals("O")'>
+					AND answer IS NOT NULL
+				</when>
+				<when test='type.equals("X")'>
+					AND answer IS NULL
+				</when>
+			</choose>
+		</if>
+		ORDER BY qno DESC
+		LIMIT #{start}, #{amount}
+	</select>
+
+	<insert id="createQuestion" parameterType="QuestionsVO"
+		keyColumn="qno" keyProperty="qno" useGeneratedKeys="true">
+		insert into questions
+		(nickname,title,content)
+		values (#{nickname},#{title}, #{content})
+	</insert>
+	<select id="showQuestion" resultType="QuestionsVO" parameterType="QuestionsVO">
+		SELECT * FROM questions WHERE qno=#{qno}
+	</select>
+	
+	<delete id="removeQuestion" parameterType="QuestionsVO">
+		DELETE FROM questions WHERE qno=#{qno}
+	</delete>
+
+	<update id="modifyQuestion" parameterType="QuestionsVO">
+		UPDATE questions
+		SET title = #{title},
+		content = #{content}
+		WHERE qno = #{qno}
+	</update>
+
+	<select id="questionListAll" resultType="QuestionsVO" parameterType="org.spring.domain.Criteria">
+		SELECT * FROM questions
+		<where>
+		<if test="type != null and type != ''">
+			<choose>
+				<when test='type.equals("O")'>
+					answer IS NOT NULL
+				</when>
+				<when test='type.equals("X")'>
+					answer IS NULL
+				</when>
+			</choose>
+		</if>
+		</where>
+		ORDER BY qno DESC
+		LIMIT #{start}, #{amount}
+	</select>
+	<select id="maxQno" resultType="Integer">
+		SELECT max(qno) FROM questions
+	</select>
+	
+	<insert id="uploadData" parameterType="FileVO"
+		keyColumn="fno" keyProperty="fno" useGeneratedKeys="true">
+		insert into fileupload
+		(filename,filepath,filetype,qno)
+		values (#{filename},#{filepath}, #{filetype},#{qno})
+	</insert>
+	
+	<select id="getFileList" resultType="FileVO" parameterType="Integer">
+		SELECT * FROM fileupload WHERE qno=#{qno}
+	</select>
+</mapper>
