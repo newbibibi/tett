@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.spring.mapper.UserMapper">
+
+	<update id="modifyUser" parameterType="java.util.Map">
+		update user set ${type} = #{value} where id like #{key}
+	</update>
+
+	<!-- 추가적인 SQL 매핑 구문들을 작성할 수 있습니다. -->
+
+</mapper>
