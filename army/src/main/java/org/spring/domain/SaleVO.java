@@ -4,8 +4,8 @@ import lombok.Data;
 
 @Data
 public class SaleVO {
-	private int no;
-	private long area;
+	private int sno;
+	private String area;
 	private String item;
 	private String salename;
 	private String start;
