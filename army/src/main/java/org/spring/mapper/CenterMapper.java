@@ -2,9 +2,7 @@ package org.spring.mapper;
 
 import java.util.List;
 
-import org.spring.domain.Criteria;
 import org.spring.domain.FAQVO;
-import org.spring.domain.FileVO;
 import org.spring.domain.MenuVO;
 import org.spring.domain.NoticeVO;
 import org.spring.domain.QuestionsVO;
@@ -23,14 +21,8 @@ public interface CenterMapper {
 	public int removeQuestion(int qno);
 	public List<MenuVO> listMenu();
 	public List<SaleVO> saleListAll();
-	public List<SaleVO> saleList(Criteria cri);
-	public List<QuestionsVO> questionListAll(Criteria cri);
-	public List<QuestionsVO> myQuestionList(Criteria cri);
-	public List<QuestionsVO> questionList(String nickname, String search);
+	public List<SaleVO> saleList(String search, String category);
+	public List<QuestionsVO> questionListAll();
+	public List<QuestionsVO> questionList(String search);
 	public QuestionsVO showQuestion(int qno);
-	public int getTotalCount(Criteria cri);
-	public int getFqnaTotalCount(Criteria cri);
-	public int maxQno();
-	public int uploadData(FileVO vo);
-	public List<FileVO> getFileList(int qno);
 }
