@@ -15,5 +15,5 @@ public class CommentVO {
 	private int isCFC;
 	private int parentCno;
 	private int likes;
-	private int isAnnoymous;
+	private int isAnonymous;
 }

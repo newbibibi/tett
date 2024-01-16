@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.spring.mapper.BoardMapper">
+
+	<delete id="removeBoard">
+		DELETE FROM Board WHERE bno = #{bno}
+	</delete>
+
+	<select id="selectList" resultType="org.spring.domain.BoardVO">
+		SELECT * FROM Board WHERE bno
+		= #{bno}
+	</select>
+
+	<select id="cntCmt" resultType="int" parameterType="int">
+		SELECT
+		COUNT(*)
+		FROM comment
+		WHERE bno = #{bno}
+	</select>
+
+	<select id="findList" resultType="org.spring.domain.BoardVO">
+		SELECT * FROM Board WHERE title
+		LIKE '%' || #{search} || '%'
+	</select>
+
+	<select id="chkLiked" resultType="int">
+		SELECT count(*) FROM Likestatus
+		WHERE bno = #{bno} AND nickname Like #{nickname}
+	</select>
+
+	<select id="showCmt" resultType="org.spring.domain.CommentVO">
+		SELECT
+		*
+		FROM
+		Comment
+		WHERE
+		bno =
+		#{bno}
+		ORDER BY
+		cTime ASC
+	</select>
+
+	<update id="updateCmt">
+		UPDATE board
+		SET commentCnt = #{cnt}
+		WHERE bno = #{bno}
+	</update>
+
+
+	<select id="cntLike" resultType="int">
+		SELECT count(*) FROM Likestatus
+		WHERE bno = #{bno}
+	</select>
+
+	<update id="updateLike">
+		UPDATE Board
+		SET likes = #{cnt}
+		WHERE bno = #{bno}
+	</update>
+
+	<update id="modifyBoard">
+		UPDATE Board SET title=#{title}, content=#{content},
+		anonymous=#{anonymous}, img=#{img} WHERE bno=#{bno}
+	</update>
+
+	<insert id="createBoard" useGeneratedKeys="true"
+		keyProperty="bno">
+		INSERT INTO Board (nickname, title, content, category,
+		anonymous, img)
+		VALUES (#{nickname}, #{title}, #{content}, #{category},
+		#{anonymous},
+		#{img})
+	</insert>
+
+	<!-- 좋아요 추가 -->
+	<insert id="addlike">
+		INSERT INTO Likestatus (bno, nickname)
+		VALUES
+		(#{bno},#{nickname})
+	</insert>
+
+	<!-- 좋아요 취소 -->
+	<delete id="dellike">
+		DELETE FROM Likestatus
+		WHERE bno = #{bno} AND nickname
+		= #{nickname} AND (cno IS NULL)
+	</delete>
+
+	<update id="cntViews">
+		UPDATE Board SET views = views + 1 WHERE bno = #{bno}
+	</update>
+	<!-- 댓글의 좋아요 수를 증가시키는 쿼리 -->
+	<update id="increase">
+		UPDATE comment
+		SET likes = likes + 1
+		WHERE cno = #{cno}
+	</update>
+
+	<!-- 댓글의 좋아요 수를 감소시키는 쿼리 -->
+	<update id="decrease">
+		UPDATE comment
+		SET likes = likes - 1
+		WHERE cno = #{cno}
+	</update>
+
+	<!-- 댓글의 현재 좋아요 수를 가져오는 쿼리 -->
+	<select id="getLikes" resultType="int">
+		SELECT likes
+		FROM comment
+		WHERE cno = #{cno}
+	</select>
+	<insert id="reportBoard">
+    INSERT INTO Report (bno, cno, reporter, nickname, reason, details)
+    VALUES (
+        <if test="bno == 0">NULL</if>
+        <if test="bno != 0">#{bno}</if>,
+        <if test="cno == 0">NULL</if>
+        <if test="cno != 0">#{cno}</if>,
+        #{reporter},
+        #{nickname},
+        #{reason},
+        #{details}
+    )
+</insert>
+
+
+	<insert id="createCmt" useGeneratedKeys="true" keyProperty="cno">
+		INSERT INTO Comment
+		(bno, content, nickname, isAnonymous, parentCno)
+		VALUES
+		(#{bno}, #{content}, #{nickname}, #{isAnonymous},
+		<choose>
+			<when test="parentCno != 0">
+				#{parentCno}
+			</when>
+			<otherwise>
+				NULL
+			</otherwise>
+		</choose>
+		)
+	</insert>
+
+	<delete id="removeCmt">
+		DELETE FROM Comment WHERE cno = #{cno}
+	</delete>
+
+	<update id="modifyCmt">
+		UPDATE Comment SET content = #{content} WHERE cno =
+		#{cno}
+	</update>
+
+	<update id="ban">
+		UPDATE User SET banDate = #{date} WHERE nickname =
+		#{nickname}
+	</update>
+
+	<select id="likeStatBoard"
+		resultType="org.spring.domain.LikestatusVO">
+		SELECT * FROM Likestatus WHERE nickname = #{nickname} AND
+		type = 'Board'
+	</select>
+
+	<select id="findByCnoAndNickname"
+		resultType="org.spring.domain.LikestatusVO">
+		SELECT * FROM Likestatus WHERE cno = #{cno} AND nickname =
+		#{nickname}
+	</select>
+	<insert id="insertLikeStatus">
+		INSERT INTO likestatus (cno, nickname)
+		VALUES (#{cno}, #{nickname})
+	</insert>
+
+	<delete id="deleteLikeStatus">
+		DELETE FROM likestatus
+		WHERE cno = #{cno} AND nickname = #{nickname}
+	</delete>
+
+
+	<select id="getTotalCount" resultType="int"
+		parameterType="org.spring.domain.Criteria">
+		SELECT COUNT(bno) FROM board
+		<where>
+			<choose>
+				<when test="category eq 'best'">
+					<if test="type eq 'All'">
+						(title LIKE CONCAT('%', #{keyword}, '%') OR content
+						LIKE CONCAT('%',
+						#{keyword}, '%') OR nickname LIKE CONCAT('%',
+						#{keyword}, '%'))
+						AND likes >= 10
+					</if>
+					<if test="type eq 'title'">
+						AND title LIKE CONCAT('%', #{keyword}, '%') AND likes
+						>= 10
+					</if>
+					<if test="type eq 'content'">
+						AND content LIKE CONCAT('%', #{keyword}, '%') AND likes
+						>= 10
+					</if>
+					<if test="type eq 'nickname'">
+						AND nickname LIKE CONCAT('%', #{keyword}, '%') AND
+						likes >= 10 AND anonymous not like 1
+					</if>
+					<if test="type eq 'TC'">
+						AND (title LIKE CONCAT('%', #{keyword}, '%') OR content
+						LIKE
+						CONCAT('%', #{keyword}, '%')) AND likes >= 10
+					</if>
+				</when>
+				<otherwise>
+					<if test="type eq 'All'">
+						(title LIKE CONCAT('%', #{keyword}, '%') OR content
+						LIKE CONCAT('%',
+						#{keyword}, '%') OR nickname LIKE CONCAT('%',
+						#{keyword}, '%'))
+						AND category like #{category} 
+						
+					</if>
+					<if test="type eq 'title'">
+						AND title LIKE CONCAT('%', #{keyword}, '%') AND
+						category like
+						#{category}
+					</if>
+					<if test="type eq 'content'">
+						AND content LIKE CONCAT('%', #{keyword}, '%') AND
+						category like
+						#{category}
+					</if>
+					<if test="type eq 'nickname'">
+						AND nickname LIKE CONCAT('%', #{keyword}, '%') AND
+						category like
+						#{category} AND anonymous != 1
+					</if>
+					<if test="type eq 'TC'">
+						AND (title LIKE CONCAT('%', #{keyword}, '%') OR content
+						LIKE
+						CONCAT('%', #{keyword}, '%')) AND category like #{category}
+					</if>
+				</otherwise>
+			</choose>
+		</where>
+	</select>
+
+
+	<select id="getListWithPasing" resultType="BoardVO"
+		parameterType="org.spring.domain.Criteria">
+		SELECT * FROM board
+		<where>
+			<choose>
+				<when test="category eq 'best'">
+					<if test="type eq 'All'">
+						(title LIKE CONCAT('%', #{keyword}, '%') OR content
+						LIKE CONCAT('%',
+						#{keyword}, '%') OR nickname LIKE CONCAT('%',
+						#{keyword}, '%'))
+						AND likes >= 10
+					</if>
+					<if test="type eq 'title'">
+						AND title LIKE CONCAT('%', #{keyword}, '%') AND likes
+						>= 10
+					</if>
+					<if test="type eq 'content'">
+						AND content LIKE CONCAT('%', #{keyword}, '%') AND likes
+						>= 10
+					</if>
+					<if test="type eq 'nickname'">
+						AND nickname LIKE CONCAT('%', #{keyword}, '%') AND
+						likes >= 10
+					</if>
+					<if test="type eq 'TC'">
+						AND (title LIKE CONCAT('%', #{keyword}, '%') OR content
+						LIKE
+						CONCAT('%', #{keyword}, '%')) AND likes >= 10
+					</if>
+				</when>
+				<otherwise>
+					<if test="type eq 'All'">
+						(title LIKE CONCAT('%', #{keyword}, '%') OR content
+						LIKE CONCAT('%',
+						#{keyword}, '%') OR nickname LIKE CONCAT('%',
+						#{keyword}, '%'))
+						AND category like #{category}
+					</if>
+					<if test="type eq 'title'">
+						AND title LIKE CONCAT('%', #{keyword}, '%') AND
+						category like
+						#{category}
+					</if>
+					<if test="type eq 'content'">
+						AND content LIKE CONCAT('%', #{keyword}, '%') AND
+						category like
+						#{category}
+					</if>
+					<if test="type eq 'nickname'">
+						AND nickname LIKE CONCAT('%', #{keyword}, '%') AND
+						category like
+						#{category}
+					</if>
+					<if test="type eq 'TC'">
+						AND (title LIKE CONCAT('%', #{keyword}, '%') OR content
+						LIKE
+						CONCAT('%', #{keyword}, '%')) AND category like #{category}
+					</if>
+				</otherwise>
+			</choose>
+		</where>
+		ORDER BY bno DESC
+		LIMIT #{start}, #{amount}
+	</select>
+
+</mapper>
+	
