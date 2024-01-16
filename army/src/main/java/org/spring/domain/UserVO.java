@@ -1,6 +1,7 @@
 package org.spring.domain;
 
 import java.sql.Timestamp;
+import java.util.Date;
 
 import lombok.Data;
 
@@ -10,8 +11,8 @@ public class UserVO {
 	private String pw;
 	private String nickname;
 	private String email;
-	private String enlisting;
-	private String armygroup;
+	private Date enlisting;
+	private String group;
 	private Timestamp baned;
 	private int admin;
 	private String sns;
